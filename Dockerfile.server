@@ -1,0 +1,14 @@
+FROM node:20-alpine AS test-runner
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY server/ ./server/
+RUN npm test
+
+FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --omit=dev
+COPY --from=test-runner /app/server/ ./server/
+EXPOSE 5000
+CMD ["node", "server/server.js"]

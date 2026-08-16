@@ -30,7 +30,6 @@ if (mongoUri && !mongoUri.includes('<db_password>')) {
   console.warn('⚠️ MONGODB_URI təyin edilməyib. server/.env faylını yoxlayın.')
 }
 
-// Authentication Middleware
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers['authorization']
   const token = authHeader && authHeader.split(' ')[1]
@@ -48,7 +47,6 @@ const verifyToken = (req, res, next) => {
   }
 }
 
-// Admin Role Check Middleware
 const requireAdmin = (req, res, next) => {
   if (!req.user || req.user.role !== 'admin') {
     return res.status(403).json({ message: 'Bu əməliyyat yalnız Adminlər üçün icazəlidir.' })
@@ -56,7 +54,6 @@ const requireAdmin = (req, res, next) => {
   next()
 }
 
-// --- HEALTH CHECK ---
 app.get('/api/health', (_req, res) => {
   res.json({
     status: client ? 'ok' : 'error',
@@ -64,9 +61,7 @@ app.get('/api/health', (_req, res) => {
   })
 })
 
-// --- AUTHENTICATION ROUTES ---
 
-// 1. REGISTER (Always assigns role: 'user')
 app.post('/api/auth/register', async (req, res) => {
   const { username, email, password } = req.body
 
@@ -88,7 +83,7 @@ app.post('/api/auth/register', async (req, res) => {
       username,
       email: email.toLowerCase(),
       password: hashedPassword,
-      role: 'user', // Public registrations are ALWAYS standard users
+      role: 'user', 
       createdAt: new Date().toISOString()
     }
 
@@ -110,7 +105,6 @@ app.post('/api/auth/register', async (req, res) => {
   }
 })
 
-// 2. LOGIN
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body
 
@@ -147,15 +141,12 @@ app.post('/api/auth/login', async (req, res) => {
   }
 })
 
-// 3. CURRENT USER (ME)
 app.get('/api/auth/me', verifyToken, async (req, res) => {
   res.json({ user: req.user })
 })
 
 
-// --- POSTS CRUD ROUTES ---
 
-// READ ALL POSTS
 app.get('/api/posts', async (_req, res) => {
   try {
     const posts = await db.collection('posts').find({}).sort({ createdAt: -1 }).toArray()
@@ -165,7 +156,6 @@ app.get('/api/posts', async (_req, res) => {
   }
 })
 
-// CREATE POST (Admin Only)
 app.post('/api/posts', verifyToken, requireAdmin, async (req, res) => {
   const { title, content, published, author } = req.body
 
@@ -191,7 +181,6 @@ app.post('/api/posts', verifyToken, requireAdmin, async (req, res) => {
   }
 })
 
-// UPDATE POST (Admin Only)
 app.put('/api/posts/:id', verifyToken, requireAdmin, async (req, res) => {
   const { id } = req.params
   const { title, content, published, author } = req.body
@@ -218,7 +207,6 @@ app.put('/api/posts/:id', verifyToken, requireAdmin, async (req, res) => {
   }
 })
 
-// DELETE POST (Admin Only)
 app.delete('/api/posts/:id', verifyToken, requireAdmin, async (req, res) => {
   const { id } = req.params
 
@@ -236,9 +224,7 @@ app.delete('/api/posts/:id', verifyToken, requireAdmin, async (req, res) => {
 })
 
 
-// --- COMMENTS & REPLIES & LIKES ROUTES ---
 
-// ADD COMMENT
 app.post('/api/posts/:id/comments', verifyToken, async (req, res) => {
   const { id } = req.params
   const { text } = req.body
@@ -273,7 +259,6 @@ app.post('/api/posts/:id/comments', verifyToken, async (req, res) => {
   }
 })
 
-// DELETE COMMENT (User can delete own comment, Admin can delete ANY comment)
 app.delete('/api/posts/:postId/comments/:commentId', verifyToken, async (req, res) => {
   const { postId, commentId } = req.params
 
@@ -308,7 +293,6 @@ app.delete('/api/posts/:postId/comments/:commentId', verifyToken, async (req, re
   }
 })
 
-// TOGGLE LIKE ON COMMENT (Instagram Style)
 app.post('/api/posts/:postId/comments/:commentId/like', verifyToken, async (req, res) => {
   const { postId, commentId } = req.params
   const userId = req.user.id.toString()
@@ -326,10 +310,8 @@ app.post('/api/posts/:postId/comments/:commentId/like', verifyToken, async (req,
 
     let updatedLikes = []
     if (userLikedIndex > -1) {
-      // Unlike
       updatedLikes = likes.filter(id => id !== userId)
     } else {
-      // Like
       updatedLikes = [...likes, userId]
     }
 
@@ -344,7 +326,6 @@ app.post('/api/posts/:postId/comments/:commentId/like', verifyToken, async (req,
   }
 })
 
-// ADD REPLY TO COMMENT (Nested Comments)
 app.post('/api/posts/:postId/comments/:commentId/replies', verifyToken, async (req, res) => {
   const { postId, commentId } = req.params
   const { text } = req.body
@@ -377,7 +358,6 @@ app.post('/api/posts/:postId/comments/:commentId/replies', verifyToken, async (r
   }
 })
 
-// DELETE REPLY FROM COMMENT
 app.delete('/api/posts/:postId/comments/:commentId/replies/:replyId', verifyToken, async (req, res) => {
   const { postId, commentId, replyId } = req.params
 
@@ -410,7 +390,6 @@ app.delete('/api/posts/:postId/comments/:commentId/replies/:replyId', verifyToke
 })
 
 
-// --- SERVER INITIALIZATION & ADMIN SEEDING ---
 async function startServer() {
   if (client) {
     try {
@@ -418,7 +397,6 @@ async function startServer() {
       db = client.db(process.env.MONGODB_DATABASE || 'blog_api')
       console.log('✅ MongoDB Atlas bazasına uğurla qoşuldu.')
 
-      // Auto-seed default Admin account if none exists
       const usersCol = db.collection('users')
       const adminCount = await usersCol.countDocuments({ role: 'admin' })
 
@@ -437,8 +415,16 @@ async function startServer() {
       console.error('❌ MongoDB bağlantı xətası:', error.message)
     }
   }
-
   app.listen(port, () => console.log(`🚀 API Server işləyir: http://localhost:${port}`))
 }
 
-startServer()
+export const setDb = (newDb) => {
+  db = newDb
+}
+
+export { app, startServer, jwtSecret }
+
+if (process.env.NODE_ENV !== 'test') {
+  startServer()
+}
+

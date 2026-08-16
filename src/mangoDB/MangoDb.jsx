@@ -15,7 +15,7 @@ import {
   ShieldCheck
 } from 'lucide-react'
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:5000'
 const POSTS_URL = `${BASE_URL}/api/posts`
 const LOGIN_URL = `${BASE_URL}/api/auth/login`
 const REGISTER_URL = `${BASE_URL}/api/auth/register`
@@ -26,26 +26,22 @@ function MangoDb() {
   const [error, setError] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Auth State
   const [token, setToken] = useState(() => localStorage.getItem('token') || '')
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('user')
     return savedUser ? JSON.parse(savedUser) : null
   })
 
-  // Modal States (Auth)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [isRegister, setIsRegister] = useState(false)
   const [authForm, setAuthForm] = useState({ username: '', email: '', password: '' })
   const [authError, setAuthError] = useState('')
 
-  // Post Modal States (Create & Edit - Admin Only)
   const [showPostModal, setShowPostModal] = useState(false)
   const [editingPost, setEditingPost] = useState(null)
   const [postForm, setPostForm] = useState({ title: '', content: '', published: true })
   const [postFormError, setPostFormError] = useState('')
 
-  // Comment & Reply States
   const [commentInputs, setCommentInputs] = useState({})
   const [replyInputs, setReplyInputs] = useState({})
   const [activeReplyBox, setActiveReplyBox] = useState({})
@@ -73,7 +69,6 @@ function MangoDb() {
     fetchPosts()
   }, [])
 
-  // Auth Functions
   const handleAuthSubmit = async (e) => {
     e.preventDefault()
     setAuthError('')
@@ -112,7 +107,6 @@ function MangoDb() {
     localStorage.removeItem('user')
   }
 
-  // Admin Post CRUD Functions
   const handleOpenCreateModal = () => {
     setEditingPost(null)
     setPostForm({ title: '', content: '', author: '', published: true })
@@ -175,7 +169,6 @@ function MangoDb() {
     }
   }
 
-  // Comment Functions
   const handleAddComment = async (postId) => {
     const text = commentInputs[postId]
     if (!text || !text.trim()) return
@@ -220,7 +213,6 @@ function MangoDb() {
     }
   }
 
-  // Like Toggle Function
   const handleToggleLikeComment = async (postId, commentId) => {
     if (!user) {
       setIsRegister(false)
@@ -245,7 +237,6 @@ function MangoDb() {
     }
   }
 
-  // Reply Functions
   const handleAddReply = async (postId, commentId) => {
     const text = replyInputs[commentId]
     if (!text || !text.trim()) return
@@ -314,9 +305,7 @@ function MangoDb() {
 
   return (
     <div className="main-content-wrapper">
-      {/* Navigation & Controls Bar */}
       <div className="controls-bar">
-        {/* Search Input */}
         <div className="search-box">
           <Search size={18} className="search-icon" />
           <input
@@ -332,7 +321,6 @@ function MangoDb() {
           )}
         </div>
 
-        {/* User Auth Info or Actions */}
         <div className="user-action-area">
           {user ? (
             <div className="logged-user-info">
@@ -369,7 +357,6 @@ function MangoDb() {
         </div>
       </div>
 
-      {/* Loading Skeleton */}
       {loading && (
         <div className="cards-grid">
           {[1, 2, 3, 4].map((n) => (
@@ -383,7 +370,6 @@ function MangoDb() {
         </div>
       )}
 
-      {/* Error Box */}
       {!loading && error && (
         <div className="status-message-box error">
           <p>{error}</p>
@@ -391,14 +377,12 @@ function MangoDb() {
         </div>
       )}
 
-      {/* Empty State */}
       {!loading && !error && filteredPosts.length === 0 && (
         <div className="status-message-box empty">
           <p>Məlumat tapılmadı.</p>
         </div>
       )}
 
-      {/* Cards Grid */}
       {!loading && !error && filteredPosts.length > 0 && (
         <div className="cards-grid">
           {filteredPosts.map((post) => {
@@ -419,7 +403,6 @@ function MangoDb() {
                     </div>
                   </div>
 
-                  {/* Admin Post Actions */}
                   {user?.role === 'admin' && (
                     <div className="card-admin-actions">
                       <button className="card-icon-btn edit" title="Redaktə et" onClick={() => handleOpenEditModal(post)}>
@@ -435,7 +418,6 @@ function MangoDb() {
                 <h2 className="post-title">{post.title}</h2>
                 <p className="post-text">{post.content}</p>
 
-                {/* --- COMMENTS SECTION --- */}
                 <div className="card-comments-wrapper">
                   <div className="comments-title-row">
                     <span className="comments-heading">
@@ -443,7 +425,6 @@ function MangoDb() {
                     </span>
                   </div>
 
-                  {/* Comment Input */}
                   {user ? (
                     <div className="comment-input-row">
                       <input
@@ -467,7 +448,6 @@ function MangoDb() {
                     </div>
                   )}
 
-                  {/* Comments List */}
                   {comments.length > 0 && (
                     <div className="comments-feed">
                       {comments.map((comment) => {
@@ -488,7 +468,6 @@ function MangoDb() {
                             <p className="comment-content">{comment.text}</p>
 
                             <div className="comment-footer-actions">
-                              {/* Like Button */}
                               <button
                                 className={`like-action-btn ${isLikedByMe ? 'active-liked' : ''}`}
                                 onClick={() => handleToggleLikeComment(post._id, comment._id)}
@@ -497,7 +476,6 @@ function MangoDb() {
                                 <span>{likesList.length}</span>
                               </button>
 
-                              {/* Reply Button - only for other users' comments */}
                               {user && comment.authorId !== user.id.toString() && (
                                 <button
                                   className="reply-action-btn"
@@ -507,7 +485,6 @@ function MangoDb() {
                                 </button>
                               )}
 
-                              {/* Delete Comment */}
                               {canDeleteComment && (
                                 <button
                                   className="delete-comment-icon-btn"
@@ -519,7 +496,6 @@ function MangoDb() {
                               )}
                             </div>
 
-                            {/* Inline Reply Input */}
                             {activeReplyBox[comment._id] && user && (
                               <div className="inline-reply-form">
                                 <input
@@ -539,7 +515,6 @@ function MangoDb() {
                               </div>
                             )}
 
-                            {/* Replies List */}
                             {repliesList.length > 0 && (
                               <div className="replies-nested-feed">
                                 {repliesList.map((reply) => {
@@ -582,7 +557,6 @@ function MangoDb() {
         </div>
       )}
 
-      {/* Auth Modal (Login / Register) */}
       {showAuthModal && (
         <div className="modal-backdrop" onClick={() => setShowAuthModal(false)}>
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
@@ -648,7 +622,6 @@ function MangoDb() {
         </div>
       )}
 
-      {/* Post Modal (Create / Edit - Admin Only) */}
       {showPostModal && (
         <div className="modal-backdrop" onClick={() => setShowPostModal(false)}>
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>

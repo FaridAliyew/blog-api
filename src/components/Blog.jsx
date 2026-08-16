@@ -1,5 +1,5 @@
 import MangoDb from '../mangoDB/MangoDb'
-import '../css/Blog.css'
+import '../css/blog.css'
 
 function Blog() {
   return (
