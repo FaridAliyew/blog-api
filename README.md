@@ -1,123 +1,142 @@
-# 🚀 Blog Web Platform & API
+# 🚀 Fullstack Blog Platform & API
 
-Müasir, sürətli və tam funksional Blog tətbiqi. Layihə **React (Vite)** frontend, **Express.js** backend, **MongoDB Atlas** verilənlər bazası və **Docker / Nginx** arxitekturası üzərində qurulub.
-
----
-
-## 🌟 Əsas Xüsusiyyətlər
-
-- 🔐 **Autentifikasiya və Səlahiyyətlər (JWT):**
-  - Qeydiyyat və Giriş sistemi
-  - Rol əsaslı giriş (Admin və İstifadəçi)
-  - Şifrələrin təhlükəsiz `bcryptjs` heşlənməsi
-
-- 📝 **Məqalə İdarəetməsi (CRUD):**
-  - Admin tərəfindən yeni məqalə yaratmaq, redaktə etmək və silmək
-  - Məqalə müəllifinin adını təyin etmə imkanı
-  - Real-vaxt axtarış filteri (başlıq, məzmun və müəllifə görə)
-
-- 💬 **İnteraktiv Şərh və Bəyənmə Sistemi (Instagram Style):**
-  - Şərhləri bəyənmək (❤️ Like / Unlike)
-  - Şərhlərə iç-içə cavab yazmaq (Nested Replies)
-  - İstifadəçilər yalnız digər istifadəçilərin şərhlərinə cavab yaza bilər
-  - İstifadəçi yalnız öz şərhini, Admin isə istənilən şərhi silə bilər
-
-- 🐳 **Docker & Nginx Arxitekturası:**
-  - Multi-stage Docker build ilə yüngül Nginx container
-  - Nginx Reverse Proxy ilə tək portdan (80) həm Frontend, həm də `/api` idarəetməsi
-  - `docker-compose` ilə tək əmrlə bütün layihəni ayağa qaldırmaq
+A modern, responsive, and production-ready Fullstack Blog application built with **React (Vite)**, **Express.js**, **MongoDB Atlas**, **Docker / Nginx**, and deployable on **Vercel Serverless**.
 
 ---
 
-## 🛠️ İstifadə Olunan Texnologiyalar
+## 🌟 Key Features
 
-| Sahə | Texnologiyalar |
+- 🔐 **Authentication & Authorization (JWT):**
+  - Secure User Registration and Login
+  - Role-Based Access Control (Admin vs. Standard User)
+  - Password hashing with `bcryptjs`
+
+- 📝 **Post Management (CRUD):**
+  - Admins can create, edit, and delete blog articles
+  - Custom author attribution support for each article
+  - Real-time search filter (searches across title, content, and author)
+
+- 💬 **Interactive Comment & Like System (Instagram-Style):**
+  - Comment Like / Unlike toggle with real-time counters
+  - Nested Replies (thread-based replies under comments)
+  - Smart reply guard (users cannot reply to their own comments)
+  - Ownership-based deletion rules (users can delete their own comments/replies, admins can delete any)
+
+- 🧪 **Automated Testing & CI/CD Quality Gate:**
+  - Automated integration and API test suite powered by **Vitest** and **Supertest**
+  - Docker multi-stage build quality gate: tests run automatically before production images are built
+
+- 🐳 **Docker & Nginx Architecture:**
+  - Multi-stage Docker build for lightweight production images
+  - Nginx Reverse Proxy serving the SPA and forwarding `/api` traffic
+  - 1-command startup via `docker-compose`
+
+- ⚡ **Vercel Fullstack Deployment:**
+  - Serverless Express API handler (`api/index.js`)
+  - Auto-reconnecting MongoDB connection pool for serverless environments
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technologies |
 |---|---|
-| **Frontend** | React 19, Vite, Vanilla CSS (Modern Nesting), Lucide React |
+| **Frontend** | React 19, Vite, Vanilla CSS (Native Nesting), Lucide React |
 | **Backend** | Node.js, Express.js, JWT, Bcryptjs, Cors, Dotenv |
 | **Database** | MongoDB Atlas |
-| **DevOps / Server** | Docker, Docker Compose, Nginx |
+| **Testing** | Vitest, Supertest |
+| **DevOps / Hosting** | Docker, Docker Compose, Nginx, Vercel |
 
 ---
 
-## 🚀 Layihəni İşə Salmaq (Docker ilə - Tövsiyə olunan)
+## 🚀 Quick Start with Docker (Recommended)
 
-### 1. Repozitoriyanı klonlayın:
+### 1. Clone the repository:
 ```bash
 git clone https://github.com/USERNAME/blog-api.git
 cd blog-api
 ```
 
-### 2. Environment (.env) faylını hazırlayın:
-`server` qovluğunda `.env` faylı yaradın (və ya `.env.example`-dən kopyalayın):
+### 2. Configure Environment Variables:
+Copy the example environment file into `server/.env`:
 ```bash
 cp server/.env.example server/.env
 ```
 
-`server/.env` faylının tərkibi:
+Ensure `server/.env` contains your MongoDB credentials:
 ```env
 MONGODB_URI=mongodb+srv://<db_user>:<db_password>@cluster.mongodb.net/blog_api?retryWrites=true&w=majority
 MONGODB_DATABASE=blog_api
 PORT=5000
-JWT_SECRET=supersecret_blog_api_key_2026
+JWT_SECRET=your_super_secret_jwt_key
 ```
 
-### 3. Container-ləri ayağa qaldırın:
+### 3. Build & Launch Containers:
 ```bash
 docker compose up --build -d
 ```
 
-Brauzerdə açın:
-- 🌐 **Frontend (Sayt):** [http://localhost](http://localhost) (Port 80)
+Open your browser:
+- 🌐 **Frontend (Web App):** [http://localhost](http://localhost) (Port 80)
 - 🔌 **Backend API:** [http://localhost:5000](http://localhost:5000)
 
 ---
 
-## 💻 Lokal İşə Salma (Docker olmadan)
+## 💻 Local Development (Without Docker)
 
-### 1. Asılılıqları quraşdırın:
+### 1. Install dependencies:
 ```bash
-# Əsas qovluqda
 npm install
 ```
 
-### 2. Backend serverini başladın:
+### 2. Start the Backend server:
 ```bash
-node server/server.js
+npm run server
 ```
 
-### 3. Frontend-i başladın:
+### 3. Start the Frontend dev server:
 ```bash
 npm run dev
 ```
 
 ---
 
-## 👑 Defolt Admin Məlumatları
+## 🧪 Running Tests
 
-Sistem ilk dəfə işə düşdükdə avtomatik olaraq ilkin Admin hesabı yaradılır:
-
-- **Email:** `admin@blog.com`
-- **Şifrə:** `admin123`
+Execute the automated test suite with Vitest:
+```bash
+npm test
+```
 
 ---
 
-## 📡 API Endpoint-lər
+## 👑 Default Admin Credentials
 
-### Autentifikasiya
-- `POST /api/auth/register` — Yeni istifadəçi qeydiyyatı
-- `POST /api/auth/login` — Giriş və JWT token əldə etmə
-- `GET /api/auth/me` — Cari daxil olmuş istifadəçi məlumatları
+Upon the first database connection, a default admin account is automatically seeded:
 
-### Məqalələr
-- `GET /api/posts` — Bütün məqalələri əldə etmək
-- `POST /api/posts` — Yeni məqalə yaratmaq *(Admin)*
-- `PUT /api/posts/:id` — Məqaləni redaktə etmək *(Admin)*
-- `DELETE /api/posts/:id` — Məqaləni silmək *(Admin)*
 
-### Şərhlər, Bəyənmələr və Cavablar
-- `POST /api/posts/:id/comments` — Şərh yazmaq
-- `DELETE /api/posts/:postId/comments/:commentId` — Şərhi silmək
-- `POST /api/posts/:postId/comments/:commentId/like` — Şərhi bəyənmək / bəyənməni geri çəkmək
-- `POST /api/posts/:postId/comments/:commentId/replies` — Şərhə cavab yazmaq
-- `DELETE /api/posts/:postId/comments/:commentId/replies/:replyId` — Cavabı silmək
+## 📡 API Reference
+
+### Authentication
+- `POST /api/auth/register` — Register a new user
+- `POST /api/auth/login` — Login and receive JWT token
+- `GET /api/auth/me` — Get current logged-in user profile
+
+### Articles / Posts
+- `GET /api/posts` — Get all published posts
+- `POST /api/posts` — Create a new post *(Admin Only)*
+- `PUT /api/posts/:id` — Update an existing post *(Admin Only)*
+- `DELETE /api/posts/:id` — Delete a post *(Admin Only)*
+
+### Comments, Likes & Replies
+- `POST /api/posts/:id/comments` — Add a comment to a post
+- `DELETE /api/posts/:postId/comments/:commentId` — Delete a comment
+- `POST /api/posts/:postId/comments/:commentId/like` — Toggle Like/Unlike on a comment
+- `POST /api/posts/:postId/comments/:commentId/replies` — Add a nested reply to a comment
+- `DELETE /api/posts/:postId/comments/:commentId/replies/:replyId` — Delete a nested reply
+
+---
+
+## 📄 License
+
+This project is open-source and available under the [MIT License](LICENSE).
