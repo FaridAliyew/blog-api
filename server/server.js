@@ -24,11 +24,30 @@ app.use(express.json())
 let client = null
 let db = null
 
-if (mongoUri && !mongoUri.includes('<db_password>')) {
-  client = new MongoClient(mongoUri)
-} else {
-  console.warn('⚠️ MONGODB_URI təyin edilməyib. server/.env faylını yoxlayın.')
+export async function ensureDbConnected() {
+  if (db) return db
+  const uri = process.env.MONGODB_URI || mongoUri
+  if (!uri || uri.includes('<db_password>')) {
+    throw new Error('MONGODB_URI təyin edilməyib.')
+  }
+  if (!client) {
+    client = new MongoClient(uri)
+  }
+  await client.connect()
+  db = client.db(process.env.MONGODB_DATABASE || 'blog_api')
+  return db
 }
+
+app.use(async (req, res, next) => {
+  if (!db && process.env.NODE_ENV !== 'test') {
+    try {
+      await ensureDbConnected()
+    } catch (err) {
+      return res.status(500).json({ message: 'Verilənlər bazası bağlantı xətası: ' + err.message })
+    }
+  }
+  next()
+})
 
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers['authorization']
@@ -391,29 +410,26 @@ app.delete('/api/posts/:postId/comments/:commentId/replies/:replyId', verifyToke
 
 
 async function startServer() {
-  if (client) {
-    try {
-      await client.connect()
-      db = client.db(process.env.MONGODB_DATABASE || 'blog_api')
-      console.log('✅ MongoDB Atlas bazasına uğurla qoşuldu.')
+  try {
+    await ensureDbConnected()
+    console.log('✅ MongoDB Atlas bazasına uğurla qoşuldu.')
 
-      const usersCol = db.collection('users')
-      const adminCount = await usersCol.countDocuments({ role: 'admin' })
+    const usersCol = db.collection('users')
+    const adminCount = await usersCol.countDocuments({ role: 'admin' })
 
-      if (adminCount === 0) {
-        const hashedPassword = await bcrypt.hash('admin123', 10)
-        await usersCol.insertOne({
-          username: 'Farid Admin',
-          email: 'admin@blog.com',
-          password: hashedPassword,
-          role: 'admin',
-          createdAt: new Date().toISOString()
-        })
-        console.log('👑 Defolt Admin hesabı yaradıldı (Email: admin@blog.com | Şifrə: admin123)')
-      }
-    } catch (error) {
-      console.error('❌ MongoDB bağlantı xətası:', error.message)
+    if (adminCount === 0) {
+      const hashedPassword = await bcrypt.hash('admin123', 10)
+      await usersCol.insertOne({
+        username: 'Farid Admin',
+        email: 'admin@blog.com',
+        password: hashedPassword,
+        role: 'admin',
+        createdAt: new Date().toISOString()
+      })
+      console.log('👑 Defolt Admin hesabı yaradıldı (Email: admin@blog.com | Şifrə: admin123)')
     }
+  } catch (error) {
+    console.error('❌ MongoDB bağlantı xətası:', error.message)
   }
   app.listen(port, () => console.log(`🚀 API Server işləyir: http://localhost:${port}`))
 }

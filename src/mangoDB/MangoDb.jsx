@@ -14,8 +14,7 @@ import {
   CornerDownRight,
   ShieldCheck
 } from 'lucide-react'
-
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:5000'
+const BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:5000')
 const POSTS_URL = `${BASE_URL}/api/posts`
 const LOGIN_URL = `${BASE_URL}/api/auth/login`
 const REGISTER_URL = `${BASE_URL}/api/auth/register`
